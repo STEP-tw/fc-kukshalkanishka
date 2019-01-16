@@ -1,0 +1,29 @@
+header {
+  border-bottom: 1px solid black;
+  padding: 20px;
+  text-align-last: right;
+  padding-right: 150px;
+}
+.heading {
+  color: orange;
+  margin: 0px 40px;
+}
+
+.flowers {
+  margin: 10px;
+  width: 1170px;
+}
+
+.catalog {
+  display: flex;
+}
+
+.linkList {
+  margin-top: 200px;
+}
+
+.jar {
+  width: 100px;
+  height: 100px;
+  margin-left: 90px;
+}
