@@ -1,28 +1,19 @@
 const fs = require('fs');
 
+const getFilePath = function(url) {
+  return './src' + url;
+};
+
 const app = (req, res) => {
-  const handledUrls = [
-    '/',
-    '/styleSheet.css',
-    '/freshorigins.jpg',
-    '/waterJar.gif'
-  ];
-  let page = './src/flowerCatalog.html';
+  let filePath = getFilePath(req.url);
 
-  if (req.url == '/styleSheet.css') {
-    page = './src/StyleSheet.css';
-  }
-
-  if (req.url == '/freshorigins.jpg') {
-    page = './images/freshorigins.jpg';
-  }
-
-  if (req.url == '/waterJar.gif') {
-    page = './images/waterJar.gif';
-  }
-
-  fs.readFile(page, (err, content) => {
-    res.write(content);
+  fs.readFile(filePath, (err, content) => {
+    if (!err) {
+      res.write(content);
+      res.statusCode = 200;
+      res.end();
+    }
+    res.statusCode = 404;
     res.end();
   });
 };
