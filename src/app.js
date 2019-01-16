@@ -11,6 +11,11 @@ const send = function(res, content, statusCode) {
   res.end();
 };
 
+const sendStatusCode = function(res, statusCode) {
+  res.statusCode = statusCode;
+  res.end();
+};
+
 const app = (req, res) => {
   let filePath = getFilePath(req.url);
 
@@ -18,10 +23,8 @@ const app = (req, res) => {
     if (!err) {
       return send(res, content, 200);
     }
-    send(res, '', 404);
+    sendStatusCode(res, 404);
   });
 };
-
-// Export a function that can act as a handler
 
 module.exports = app;
