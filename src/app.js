@@ -1,6 +1,7 @@
 const fs = require('fs');
 
 const getFilePath = function(url) {
+  if (url == '/') return './src/flowerCatalog.html';
   return './src' + url;
 };
 
