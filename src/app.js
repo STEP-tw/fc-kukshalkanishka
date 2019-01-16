@@ -5,17 +5,20 @@ const getFilePath = function(url) {
   return './src' + url;
 };
 
+const send = function(res, content, statusCode) {
+  res.write(content);
+  res.statusCode = statusCode;
+  res.end();
+};
+
 const app = (req, res) => {
   let filePath = getFilePath(req.url);
 
   fs.readFile(filePath, (err, content) => {
     if (!err) {
-      res.write(content);
-      res.statusCode = 200;
-      res.end();
+      return send(res, content, 200);
     }
-    res.statusCode = 404;
-    res.end();
+    send(res, '', 404);
   });
 };
 
