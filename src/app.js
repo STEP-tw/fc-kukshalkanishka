@@ -62,15 +62,22 @@ const renderGuestBookPage = function(req, res) {
   });
 };
 
-const readLogFile = function(req, res, guestBook) {
+const readLogsAndServePage = function(req, res, guestBook) {
   fs.readFile('./data/userLog.json', (err, userLogs) => {
-    send(res, guestBook + userLogs, 200);
+    let userLogsInJSON = JSON.parse(userLogs);
+    userLogsInJSON.userLogs.forEach(commentDetail => {
+      guestBook += `<h1>${commentDetail.name}</h1><p>  ${
+        commentDetail.comment
+      }<p><h3>
+       ${commentDetail.date}</h3>`;
+    });
+    send(res, guestBook, 200);
   });
 };
 
 const serveGuestBookPage = function(req, res) {
   fs.readFile('./public/guestBook.html', (error, guestBook) => {
-    readLogFile(req, res, guestBook);
+    readLogsAndServePage(req, res, guestBook);
   });
 };
 
