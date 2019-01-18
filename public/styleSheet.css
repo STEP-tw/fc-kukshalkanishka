@@ -43,19 +43,21 @@ header {
   justify-content: center;
 }
 
-.AbeliophyllumHeader {
+.flowerHeader {
   color: orange;
   display: flex;
   justify-content: center;
 }
 
-.aboutAbeliophyllum {
+.aboutFlower {
   display: flex;
   word-wrap: break-word;
 }
-.abeliophyllumImage {
+
+.flowerImage {
   margin-right: 10px;
 }
-.abeliophyllumText {
+
+.flowerText {
   padding-top: 250px;
 }
