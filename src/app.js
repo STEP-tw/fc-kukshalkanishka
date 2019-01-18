@@ -1,10 +1,16 @@
 const fs = require('fs');
 const requestHandler = require('./requestHandler');
-
 const app = new requestHandler();
 
 const createPrefixPath = prefix => {
   return url => prefix + url;
+};
+
+const readCommentLogs = function(req, res, next) {
+  fs.readFile('./data/userLog.json', (err, logs) => {
+    commentsLog = JSON.parse(logs);
+    next();
+  });
 };
 
 const getFilePath = function(url) {
@@ -33,7 +39,7 @@ const readBody = (req, res, next) => {
   });
 };
 
-const servePage = (req, res) => {
+const serveFile = (req, res) => {
   let filePath = getFilePath(req.url);
 
   fs.readFile(filePath, (err, content) => {
@@ -56,41 +62,37 @@ const parseCommentDetails = commentDetails => {
   return commentDetail;
 };
 
-const renderGuestBookPage = function(req, res) {
+const renderAndServeGuestBook = function(req, res) {
   const commentDetails = parseCommentDetails(req.body);
   commentDetails.date = new Date().toLocaleString();
-  fs.readFile('./data/userLog.json', (err, logs) => {
-    let logsInJSON = JSON.parse(logs);
-    logsInJSON.unshift(commentDetails);
-    fs.writeFile('./data/userLog.json', JSON.stringify(logsInJSON), error => {
-      serveGuestBookPage(req, res);
-    });
+  commentsLog.unshift(commentDetails);
+  fs.writeFile('./data/userLog.json', JSON.stringify(commentsLog), error => {
+    serveGuestBook(req, res);
   });
 };
 
-const readLogsAndServePage = function(req, res, guestBook) {
-  fs.readFile('./data/userLog.json', (err, userLogs) => {
-    let userLogsInJSON = JSON.parse(userLogs);
-    userLogsInJSON.forEach(commentDetail => {
-      guestBook += `<h1>${commentDetail.name}</h1><p>  ${
-        commentDetail.comment
-      }<p><h3>
-       ${commentDetail.date}</h3>`;
-    });
-    send(res, guestBook, 200);
-  });
+const generateCommentHtml = function(commentDetail) {
+  return `<h1>${commentDetail.name}</h1><p>  ${commentDetail.comment}<p><h3>
+     ${commentDetail.date}</h3>`;
 };
 
-const serveGuestBookPage = function(req, res) {
+const renderGuestBook = function(req, res, guestBook) {
+  let commentsHtml = commentsLog.map(generateCommentHtml).join('');
+  return guestBook + commentsHtml;
+};
+
+const serveGuestBook = function(req, res) {
   fs.readFile('./public/guestBook.html', (error, guestBook) => {
-    readLogsAndServePage(req, res, guestBook);
+    const renderedGuestBook = renderGuestBook(req, res, guestBook);
+    send(res, renderedGuestBook, 200);
   });
 };
 
+app.use(readCommentLogs);
 app.use(readBody);
-app.get('/', servePage);
-app.get('/guestBook.html', serveGuestBookPage);
-app.post('/guestBook.html', renderGuestBookPage);
-app.use(servePage);
+app.get('/', serveFile);
+app.get('/guestBook.html', serveGuestBook);
+app.post('/guestBook.html', renderAndServeGuestBook);
+app.use(serveFile);
 
 module.exports = app.handleRequest.bind(app);
