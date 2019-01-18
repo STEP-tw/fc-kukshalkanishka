@@ -36,3 +36,8 @@ header {
 .commentLog {
   border: 1px solid black;
 }
+.bookHeader {
+  color: orange;
+  display: flex;
+  justify-content: center;
+}

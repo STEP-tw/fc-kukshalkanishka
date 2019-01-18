@@ -1,10 +1,16 @@
 const fs = require('fs');
 const requestHandler = require('./requestHandler');
+
 const app = new requestHandler();
 
+const createPrefixPath = prefix => {
+  return url => prefix + url;
+};
+
 const getFilePath = function(url) {
-  if (url == '/') return './public/flowerCatalog.html';
-  return './public' + url;
+  if (url == '/') return './public/index.html';
+  const addPrefix = createPrefixPath('public');
+  return addPrefix(url);
 };
 
 const send = function(res, content, statusCode) {
@@ -55,7 +61,7 @@ const renderGuestBookPage = function(req, res) {
   commentDetails.date = new Date().toLocaleString();
   fs.readFile('./data/userLog.json', (err, logs) => {
     let logsInJSON = JSON.parse(logs);
-    logsInJSON.userLogs.unshift(commentDetails);
+    logsInJSON.unshift(commentDetails);
     fs.writeFile('./data/userLog.json', JSON.stringify(logsInJSON), error => {
       serveGuestBookPage(req, res);
     });
@@ -65,7 +71,7 @@ const renderGuestBookPage = function(req, res) {
 const readLogsAndServePage = function(req, res, guestBook) {
   fs.readFile('./data/userLog.json', (err, userLogs) => {
     let userLogsInJSON = JSON.parse(userLogs);
-    userLogsInJSON.userLogs.forEach(commentDetail => {
+    userLogsInJSON.forEach(commentDetail => {
       guestBook += `<h1>${commentDetail.name}</h1><p>  ${
         commentDetail.comment
       }<p><h3>
