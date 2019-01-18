@@ -89,8 +89,8 @@ const serveGuestBook = function(req, res) {
 };
 
 app.use(readCommentLogs);
-app.use(readBody);
 app.get('/', serveFile);
+app.post('/guestBook.html', readBody);
 app.get('/guestBook.html', serveGuestBook);
 app.post('/guestBook.html', renderAndServeGuestBook);
 app.use(serveFile);
