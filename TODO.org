@@ -1,2 +1,4 @@
 * DONE link the html file to app.js.
-* TODO develop html page as per the requirements
+* DONE develop html page as per the requirements
+* TODO change name of serve page to serve file.
+* TODO use map instead of for each.

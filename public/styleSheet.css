@@ -36,8 +36,26 @@ header {
 .commentLog {
   border: 1px solid black;
 }
+
 .bookHeader {
   color: orange;
   display: flex;
   justify-content: center;
+}
+
+.AbeliophyllumHeader {
+  color: orange;
+  display: flex;
+  justify-content: center;
+}
+
+.aboutAbeliophyllum {
+  display: flex;
+  word-wrap: break-word;
+}
+.abeliophyllumImage {
+  margin-right: 10px;
+}
+.abeliophyllumText {
+  padding-top: 250px;
 }
