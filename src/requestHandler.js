@@ -13,6 +13,14 @@ class requestHandler {
     this.routes.push({ handler });
   }
 
+  post(url, handler) {
+    this.routes.push({ method: 'POST', handler, url });
+  }
+
+  get(url, handler) {
+    this.routes.push({ method: 'GET', handler, url });
+  }
+
   handleRequest(req, res) {
     let matchingRoutes = this.routes.filter(route => isMatching(req, route));
     let remaing = [...matchingRoutes];
