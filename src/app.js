@@ -10,7 +10,6 @@ const getFilePath = function(url) {
 const send = function(res, content, statusCode) {
   res.write(content);
   res.statusCode = statusCode;
-
   res.end();
 };
 
@@ -28,16 +27,15 @@ const readBody = (req, res, next) => {
   });
 };
 
-const servePage = (req, res, next) => {
+const servePage = (req, res) => {
   let filePath = getFilePath(req.url);
 
   fs.readFile(filePath, (err, content) => {
     if (!err) {
       send(res, content, 200);
-      next();
+      return;
     }
     sendStatusCode(res, 404);
-    next();
   });
 };
 
@@ -55,18 +53,18 @@ const parseCommentDetails = commentDetails => {
 const renderGuestBookPage = function(req, res) {
   const commentDetails = parseCommentDetails(req.body);
   commentDetails.date = new Date().toLocaleString();
-  fs.appendFile(
-    './data/userLog.json',
-    JSON.stringify(commentDetails),
-    error => {
+  fs.readFile('./data/userLog.json', (err, logs) => {
+    let logsInJSON = JSON.parse(logs);
+    logsInJSON.userLogs.unshift(commentDetails);
+    fs.writeFile('./data/userLog.json', JSON.stringify(logsInJSON), error => {
       serveGuestBookPage(req, res);
-    }
-  );
+    });
+  });
 };
 
 const readLogFile = function(req, res, guestBook) {
-  fs.readFile('./data/userLog.json', (err, commentLog) => {
-    send(res, guestBook + commentLog, 200);
+  fs.readFile('./data/userLog.json', (err, userLogs) => {
+    send(res, guestBook + userLogs, 200);
   });
 };
 
