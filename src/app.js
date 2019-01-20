@@ -2,12 +2,12 @@ const fs = require('fs');
 const requestHandler = require('./requestHandler');
 const app = new requestHandler();
 
-const createPrefixPath = prefix => {
-  return url => prefix + url;
+const addPrefix = function(url) {
+  return './public' + url;
 };
 
-const readCommentLogs = function(req, res, next) {
-  fs.readFile('./data/userLog.json', (err, logs) => {
+const readComments = function(req, res, next) {
+  fs.readFile('./data/comments.json', (err, logs) => {
     commentsLog = JSON.parse(logs);
     next();
   });
@@ -15,18 +15,12 @@ const readCommentLogs = function(req, res, next) {
 
 const getFilePath = function(url) {
   if (url == '/') return './public/index.html';
-  const addPrefix = createPrefixPath('public');
   return addPrefix(url);
 };
 
 const send = function(res, content, statusCode) {
+  res.statusCode = statusCode;
   res.write(content);
-  res.statusCode = statusCode;
-  res.end();
-};
-
-const sendStatusCode = function(res, statusCode) {
-  res.statusCode = statusCode;
   res.end();
 };
 
@@ -47,7 +41,7 @@ const serveFile = (req, res) => {
       send(res, content, 200);
       return;
     }
-    sendStatusCode(res, 404);
+    send(res, '', 404);
   });
 };
 
@@ -66,7 +60,7 @@ const renderAndServeGuestBook = function(req, res) {
   const commentDetails = parseCommentDetails(req.body);
   commentDetails.date = new Date().toLocaleString();
   commentsLog.unshift(commentDetails);
-  fs.writeFile('./data/userLog.json', JSON.stringify(commentsLog), error => {
+  fs.writeFile('./data/comments.json', JSON.stringify(commentsLog), error => {
     serveGuestBook(req, res);
   });
 };
@@ -88,7 +82,7 @@ const serveGuestBook = function(req, res) {
   });
 };
 
-app.use(readCommentLogs);
+app.use(readComments);
 app.get('/', serveFile);
 app.post('/guestBook.html', readBody);
 app.get('/guestBook.html', serveGuestBook);
