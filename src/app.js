@@ -1,28 +1,9 @@
 const fs = require('fs');
 const requestHandler = require('./requestHandler');
+const { send, parseComments, getFilePath } = require('./appUtil');
+const Comments = require('./comments');
 const app = new requestHandler();
-
-const addPrefix = function(url) {
-  return './public' + url;
-};
-
-const readComments = function(req, res, next) {
-  fs.readFile('./data/comments.json', (err, logs) => {
-    commentsLog = JSON.parse(logs);
-    next();
-  });
-};
-
-const getFilePath = function(url) {
-  if (url == '/') return './public/index.html';
-  return addPrefix(url);
-};
-
-const send = function(res, content, statusCode) {
-  res.statusCode = statusCode;
-  res.write(content);
-  res.end();
-};
+const comments = new Comments();
 
 const readBody = (req, res, next) => {
   let content = '';
@@ -45,33 +26,15 @@ const serveFile = (req, res) => {
   });
 };
 
-const parseCommentDetails = commentDetails => {
-  let commentDetail = {};
-  const splitKeyValue = pair => pair.split('=');
-  const assignValueToKey = ([key, value]) => (commentDetail[key] = value);
-  commentDetails
-    .split('&')
-    .map(splitKeyValue)
-    .forEach(assignValueToKey);
-  return commentDetail;
-};
-
-const renderAndServeGuestBook = function(req, res) {
-  const commentDetails = parseCommentDetails(req.body);
-  commentDetails.date = new Date().toLocaleString();
-  commentsLog.unshift(commentDetails);
-  fs.writeFile('./data/comments.json', JSON.stringify(commentsLog), error => {
-    serveGuestBook(req, res);
-  });
-};
-
-const generateCommentHtml = function(commentDetail) {
-  return `<h1>${commentDetail.name}</h1><p>  ${commentDetail.comment}<p><h3>
-     ${commentDetail.date}</h3>`;
+const serveGuestBookForPost = function(req, res) {
+  const commentDetails = parseComments(req.body);
+  comments.insertComment(commentDetails);
+  comments.updateCommentsFile();
+  serveGuestBook(req, res);
 };
 
 const renderGuestBook = function(req, res, guestBook) {
-  let commentsHtml = commentsLog.map(generateCommentHtml).join('');
+  let commentsHtml = comments.getCommentsHtml();
   return guestBook + commentsHtml;
 };
 
@@ -82,11 +45,11 @@ const serveGuestBook = function(req, res) {
   });
 };
 
-app.use(readComments);
+comments.initializeComments();
 app.get('/', serveFile);
 app.post('/guestBook.html', readBody);
 app.get('/guestBook.html', serveGuestBook);
-app.post('/guestBook.html', renderAndServeGuestBook);
+app.post('/guestBook.html', serveGuestBookForPost);
 app.use(serveFile);
 
 module.exports = app.handleRequest.bind(app);

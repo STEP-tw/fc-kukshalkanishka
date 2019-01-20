@@ -1,10 +1,13 @@
-const createPrefixPath = prefix => {
-  return url => prefix + url;
-};
-const getFilePath = function(url) {
-  if (url == '/') return './public/index.html';
-  const addPrefix = createPrefixPath('public');
-  return addPrefix(url);
+const parseComments = function(commentDetails) {
+  let commentDetail = {};
+  const splitKeyValue = pair => pair.split('=');
+  const assignValueToKey = ([key, value]) => (commentDetail[key] = value);
+  commentDetails
+    .split('&')
+    .map(splitKeyValue)
+    .forEach(assignValueToKey);
+  commentDetail.date = new Date().toLocaleString();
+  return commentDetail;
 };
 
 const send = function(res, content, statusCode) {
@@ -13,15 +16,13 @@ const send = function(res, content, statusCode) {
   res.end();
 };
 
-const parseCommentDetails = commentDetails => {
-  let commentDetail = {};
-  const splitKeyValue = pair => pair.split('=');
-  const assignValueToKey = ([key, value]) => (commentDetail[key] = value);
-  commentDetails
-    .split('&')
-    .map(splitKeyValue)
-    .forEach(assignValueToKey);
-  return commentDetail;
+const addPrefix = function(url) {
+  return './public' + url;
 };
 
-module.exports = { getFilePath, send, parseCommentDetails };
+const getFilePath = function(url) {
+  if (url == '/') return './public/index.html';
+  return addPrefix(url);
+};
+
+module.exports = { parseComments, send, getFilePath };
