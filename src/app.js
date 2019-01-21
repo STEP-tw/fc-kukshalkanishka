@@ -22,6 +22,11 @@ const readBody = (req, res, next) => {
   });
 };
 
+const logRequest = (req, res, next) => {
+  console.log(req.url);
+  next();
+};
+
 /**
  * Serves a file at get request.
  * @param {object} req - The http request
@@ -68,6 +73,7 @@ const renderGuestBook = function(guestBook) {
  * @param {object} req
  * @param {object} res
  */
+
 const serveGuestBook = function(req, res) {
   fs.readFile('./public/guestBook.html', (error, guestBook) => {
     const renderedGuestBook = renderGuestBook(guestBook.toString());
@@ -75,6 +81,16 @@ const serveGuestBook = function(req, res) {
   });
 };
 
+/**
+ * Refresh the comments section
+ *  @param {object} req
+ * @param {object} res
+ */
+
+const refreshComments = function(req, res) {
+  res.write(comments.getCommentsHtml());
+  res.end();
+};
 /**
  * initailize comments with the contents of comments.json.
  */
@@ -84,10 +100,11 @@ comments.initializeComments();
 /**
  * helper's method calls to set the sequence of function execution.
  */
-
+app.use(logRequest);
 app.get('/', serveFile);
-app.post('/guestBook.html', readBody);
 app.get('/guestBook.html', serveGuestBook);
+app.get('/comments', refreshComments);
+app.post('/guestBook.html', readBody);
 app.post('/guestBook.html', serveGuestBookForPost);
 app.use(serveFile);
 
