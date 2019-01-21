@@ -60,7 +60,7 @@ const serveGuestBookForPost = function(req, res) {
 
 const renderGuestBook = function(guestBook) {
   let commentsHtml = comments.getCommentsHtml();
-  return guestBook + commentsHtml;
+  return guestBook.replace('##guest_comments##', commentsHtml);
 };
 
 /**
@@ -70,7 +70,7 @@ const renderGuestBook = function(guestBook) {
  */
 const serveGuestBook = function(req, res) {
   fs.readFile('./public/guestBook.html', (error, guestBook) => {
-    const renderedGuestBook = renderGuestBook(guestBook);
+    const renderedGuestBook = renderGuestBook(guestBook.toString());
     send(res, renderedGuestBook, 200);
   });
 };

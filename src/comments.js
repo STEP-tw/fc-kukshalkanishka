@@ -1,5 +1,7 @@
 const fs = require('fs');
 
+/**@constructor */
+
 class Comments {
   constructor() {
     this.comments = [];
@@ -13,10 +15,20 @@ class Comments {
     );
   }
 
-  initializeComments() {
+  fileExists() {
+    return fs.existsSync('./data/comments.json');
+  }
+
+  readComments() {
     let comments = fs.readFileSync('./data/comments.json', 'utf-8');
     if (comments) {
       this.comments = JSON.parse(comments);
+    }
+  }
+
+  initializeComments() {
+    if (this.fileExists()) {
+      this.readComments();
     }
   }
 

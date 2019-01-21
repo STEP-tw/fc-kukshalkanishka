@@ -21,8 +21,7 @@ const getFilePath = function(url) {
 };
 
 const formatComment = data => {
-  let decodedData = unescape(data).replace(/\+/g, ' ');
-  return decodedData;
+  return unescape(data).replace(/\+/g, ' ');
 };
 
 module.exports = { parseComments, getFilePath, formatComment };
