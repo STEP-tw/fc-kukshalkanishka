@@ -68,8 +68,13 @@ const serveGuestBookForPost = function(req, res) {
  * @param {JSON} guestBook - contains all the previous comment details till data.
  */
 
-const renderGuestBook = function(guestBook) {
-  let logInHtml = Ids.getHtmlTemplate();
+const renderGuestBook = function(reqID, guestBook) {
+  console.log(reqID, Ids);
+  let logInHtml = Ids.loggedInHtml;
+
+  if (!reqID || !Ids.isUserValid(parseCookie(reqID))) {
+    logInHtml = Ids.logInHtml;
+  }
   let commentsHtml = comments.getCommentsHtml();
   guestBook = guestBook.replace('##_login_in_##', logInHtml);
   return guestBook.replace('##guest_comments##', commentsHtml);
@@ -83,7 +88,8 @@ const renderGuestBook = function(guestBook) {
 
 const serveGuestBook = function(req, res) {
   fs.readFile('./public/guestBook.html', (error, guestBook) => {
-    const renderedGuestBook = renderGuestBook(guestBook.toString());
+    let reqID = req.headers.cookie;
+    const renderedGuestBook = renderGuestBook(reqID, guestBook.toString());
     send(res, renderedGuestBook, 200);
   });
 };
@@ -103,19 +109,22 @@ const parseCookie = reqId => {
   return +reqId.split('=')[1];
 };
 
-const provideCookies = (req, res) => {
+const provideCookie = (req, res) => {
   let ID = Ids.getUniqueId();
   res.setHeader('Set-Cookie', `id = ${ID}`);
-  Ids.setHtml();
-  res.write(Ids.getHtmlTemplate());
-  res.end();
+};
+
+const handleGuestLogin = (req, res) => {
+  let reqID = req.headers.cookie;
+  if (!reqID || !Ids.isUserValid(reqID)) {
+    provideCookie(req, res);
+  }
+  serveGuestBook(req, res);
 };
 
 const resetCookie = function(req, res) {
   Ids.resetCookies();
-  res.setHeader('Set-Cookie', `id = `);
-  res.write(Ids.getHtmlTemplate());
-  res.end();
+  serveGuestBook(req, res);
 };
 
 /**
@@ -138,8 +147,9 @@ app.use(logRequest);
 app.get('/', serveFile);
 app.get('/guestBook.html', serveGuestBook);
 app.get('/comments', refreshComments);
-app.get('/logIn', provideCookies);
-app.get('/logOut', resetCookie);
+app.post('/logout', resetCookie);
+app.post('/login', readBody);
+app.post('/login', handleGuestLogin);
 app.post('/guestBook.html', readBody);
 app.post('/guestBook.html', serveGuestBookForPost);
 app.use(serveFile);
