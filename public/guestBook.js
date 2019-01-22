@@ -1,17 +1,32 @@
 const refreshComments = function() {
-  const request = new XMLHttpRequest();
+  fetch('/comments')
+    .then(res => res.text())
+    .then(
+      comments => (document.getElementById('comments').innerHTML = comments)
+    );
+};
 
-  const reqListener = function() {
-    document.getElementById('comments').innerHTML = request.response;
-  };
+const logInToGuestBook = function() {
+  fetch('/logIn')
+    .then(res => res.text())
+    .then(form => {
+      document.getElementById('logInForm').innerHTML = form;
+      document.getElementById('logOut').onclick = logOutFromGuestBook;
+    });
+};
 
-  request.addEventListener('load', reqListener);
-  request.open('GET', '/comments');
-  request.send();
+const logOutFromGuestBook = function() {
+  fetch('/logOut')
+    .then(res => res.text())
+    .then(form => {
+      document.getElementById('logInForm').innerHTML = form;
+      document.getElementById('logIn').onclick = logInToGuestBook;
+    });
 };
 
 const setEventListner = function() {
   document.getElementById('refresh').onclick = refreshComments;
+  document.getElementById('logIn').onclick = logInToGuestBook;
 };
 
 window.onload = setEventListner;

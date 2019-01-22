@@ -9,7 +9,7 @@ class Comments {
 
   updateCommentsFile() {
     fs.writeFile(
-      '/data/comments.json',
+      './data/comments.json',
       JSON.stringify(this.comments),
       error => {}
     );

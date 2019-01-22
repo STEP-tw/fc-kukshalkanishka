@@ -6,18 +6,13 @@
     <script src="guestBook.js"></script>
   </head>
   <body>
-    <form method="POST" action="guestBook.html">
-      <div class="bookHeader">
-        <h1><a href="/"><< </a></h1>
-        <h1>Guest Book</h1>
-      </div>
-      <div><label>Name: </label><input type="text" name="name" /></div>
-      <label>Comment: </label>
-      <textarea name="comment" cols="30" rows="4" class="comment"></textarea>
-      <input type="submit" value="submit" class="submit" />
-      <hr />
-      <h1>Comments</h1>
-    </form>
+    <div class="bookHeader">
+      <h1><a href="/"><< </a></h1>
+      <h1>Guest Book</h1>
+    </div>
+    <div id="logInForm">##_login_in_##</div>
+    <hr />
+    <h1>Comments</h1>
     <button id="refresh">Refresh</button>
     <div id="comments">##guest_comments##</div>
     <hr />

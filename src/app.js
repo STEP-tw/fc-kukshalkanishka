@@ -3,8 +3,10 @@ const requestHandler = require('./requestHandler');
 const { parseComments, getFilePath } = require('./appHelper');
 const { send } = require('./appUtil');
 const Comments = require('./comments');
+const IDs = require('./IDs');
 const app = new requestHandler();
 const comments = new Comments();
+const Ids = new IDs();
 
 /**
  *Reads the req body at post request.
@@ -23,7 +25,7 @@ const readBody = (req, res, next) => {
 };
 
 const logRequest = (req, res, next) => {
-  console.log(req.url);
+  console.log(req.method, req.url);
   next();
 };
 
@@ -52,9 +54,12 @@ const serveFile = (req, res) => {
  */
 
 const serveGuestBookForPost = function(req, res) {
-  const commentDetails = parseComments(req.body);
-  comments.insertComment(commentDetails);
-  comments.updateCommentsFile();
+  let reqID = req.headers.cookie;
+  if (reqID && Ids.isUserValid(parseCookie(reqID))) {
+    const commentDetails = parseComments(req.body);
+    comments.insertComment(commentDetails);
+    comments.updateCommentsFile();
+  }
   serveGuestBook(req, res);
 };
 
@@ -64,7 +69,9 @@ const serveGuestBookForPost = function(req, res) {
  */
 
 const renderGuestBook = function(guestBook) {
+  let logInHtml = Ids.getHtmlTemplate();
   let commentsHtml = comments.getCommentsHtml();
+  guestBook = guestBook.replace('##_login_in_##', logInHtml);
   return guestBook.replace('##guest_comments##', commentsHtml);
 };
 
@@ -83,7 +90,7 @@ const serveGuestBook = function(req, res) {
 
 /**
  * Refresh the comments section
- *  @param {object} req
+ * @param {object} req
  * @param {object} res
  */
 
@@ -91,6 +98,26 @@ const refreshComments = function(req, res) {
   res.write(comments.getCommentsHtml());
   res.end();
 };
+
+const parseCookie = reqId => {
+  return +reqId.split('=')[1];
+};
+
+const provideCookies = (req, res) => {
+  let ID = Ids.getUniqueId();
+  res.setHeader('Set-Cookie', `id = ${ID}`);
+  Ids.setHtml();
+  res.write(Ids.getHtmlTemplate());
+  res.end();
+};
+
+const resetCookie = function(req, res) {
+  Ids.resetCookies();
+  res.setHeader('Set-Cookie', `id = `);
+  res.write(Ids.getHtmlTemplate());
+  res.end();
+};
+
 /**
  * initailize comments with the contents of comments.json.
  */
@@ -98,12 +125,21 @@ const refreshComments = function(req, res) {
 comments.initializeComments();
 
 /**
+ * Initialize html templates for guest book.
+ */
+
+Ids.loadHtml();
+
+/**
  * helper's method calls to set the sequence of function execution.
  */
+
 app.use(logRequest);
 app.get('/', serveFile);
 app.get('/guestBook.html', serveGuestBook);
 app.get('/comments', refreshComments);
+app.get('/logIn', provideCookies);
+app.get('/logOut', resetCookie);
 app.post('/guestBook.html', readBody);
 app.post('/guestBook.html', serveGuestBookForPost);
 app.use(serveFile);
