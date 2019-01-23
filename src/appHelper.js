@@ -24,4 +24,4 @@ const formatComment = data => {
   return unescape(data).replace(/\+/g, ' ');
 };
 
-module.exports = { parseComments, getFilePath, formatComment };
+module.exports = { parseComments, getFilePath };

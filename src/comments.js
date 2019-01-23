@@ -5,6 +5,7 @@ const fs = require('fs');
 class Comments {
   constructor() {
     this.comments = [];
+    this.name = '';
   }
 
   updateCommentsFile() {
@@ -34,14 +35,15 @@ class Comments {
 
   generateCommentHtml(commentDetail) {
     return `<h1>${commentDetail.name}</h1><p>  ${commentDetail.comment}<p><h3>
-       ${commentDetail.date}</h3>`;
+    ${commentDetail.date}</h3>`;
   }
 
   getCommentsHtml() {
     return this.comments.map(this.generateCommentHtml).join('');
   }
 
-  insertComment(comment) {
+  insertComment(comment, name) {
+    comment.name = name;
     this.comments.unshift(comment);
   }
 }

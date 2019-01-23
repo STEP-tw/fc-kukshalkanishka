@@ -25,7 +25,7 @@ const readBody = (req, res, next) => {
 };
 
 const logRequest = (req, res, next) => {
-  console.log(req.method, req.url);
+  console.log(req.method, req.url, req.headers);
   next();
 };
 
@@ -54,12 +54,9 @@ const serveFile = (req, res) => {
  */
 
 const serveGuestBookForPost = function(req, res) {
-  let reqID = req.headers.cookie;
-  if (reqID && Ids.isUserValid(parseCookie(reqID))) {
-    const commentDetails = parseComments(req.body);
-    comments.insertComment(commentDetails);
-    comments.updateCommentsFile();
-  }
+  const commentDetails = parseComments(req.body);
+  comments.insertComment(commentDetails, parseCookie(req.headers.cookie));
+  comments.updateCommentsFile();
   serveGuestBook(req, res);
 };
 
@@ -69,11 +66,10 @@ const serveGuestBookForPost = function(req, res) {
  */
 
 const renderGuestBook = function(reqID, guestBook) {
-  console.log(reqID, Ids);
-  let logInHtml = Ids.loggedInHtml;
-
-  if (!reqID || !Ids.isUserValid(parseCookie(reqID))) {
-    logInHtml = Ids.logInHtml;
+  let logInHtml = Ids.logInHtml;
+  if (reqID && Ids.isUserValid(parseCookie(reqID))) {
+    Ids.setName(parseCookie(reqID));
+    logInHtml = Ids.loggedInHtml;
   }
   let commentsHtml = comments.getCommentsHtml();
   guestBook = guestBook.replace('##_login_in_##', logInHtml);
@@ -106,20 +102,19 @@ const refreshComments = function(req, res) {
 };
 
 const parseCookie = reqId => {
-  return +reqId.split('=')[1];
+  return reqId.split('=')[1];
 };
 
-const provideCookie = (req, res) => {
-  let ID = Ids.getUniqueId();
-  res.setHeader('Set-Cookie', `id = ${ID}`);
+const parseName = reqId => {
+  return reqId.split('=')[1];
 };
 
 const handleGuestLogin = (req, res) => {
-  let reqID = req.headers.cookie;
-  if (!reqID || !Ids.isUserValid(reqID)) {
-    provideCookie(req, res);
-  }
-  serveGuestBook(req, res);
+  let ID = Ids.getUniqueId(parseName(req.body));
+  res.setHeader('Set-Cookie', `id = ${ID}`);
+  res.statusCode = 302;
+  res.setHeader('location', '/guestBook.html');
+  res.end();
 };
 
 const resetCookie = function(req, res) {
@@ -144,13 +139,12 @@ Ids.loadHtml();
  */
 
 app.use(logRequest);
+app.use(readBody);
 app.get('/', serveFile);
 app.get('/guestBook.html', serveGuestBook);
 app.get('/comments', refreshComments);
 app.post('/logout', resetCookie);
-app.post('/login', readBody);
 app.post('/login', handleGuestLogin);
-app.post('/guestBook.html', readBody);
 app.post('/guestBook.html', serveGuestBookForPost);
 app.use(serveFile);
 

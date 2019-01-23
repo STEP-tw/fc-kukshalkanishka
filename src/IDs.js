@@ -8,6 +8,10 @@ class IDs {
     this.logInHtml = '';
   }
 
+  updateIdFile() {
+    fs.writeFile('./data/ids.json', JSON.stringify(this.IDs), error => {});
+  }
+
   insert(ID) {
     this.IDs.push(ID);
   }
@@ -15,12 +19,14 @@ class IDs {
   loadHtml() {
     this.loggedInHtml = fs.readFileSync('./src/guestBookLogOut.html', 'utf-8');
     this.logInHtml = fs.readFileSync('./src/guestBookLogIn.html', 'utf-8');
+    this.IDs = JSON.parse(fs.readFileSync('./data/ids.json'));
     this.htmlTemplate = this.logInHtml;
   }
 
-  getUniqueId() {
-    let ID = new Date().getTime();
+  getUniqueId(name) {
+    let ID = name;
     this.insert(ID);
+    this.updateIdFile();
     return ID;
   }
 
@@ -41,10 +47,16 @@ class IDs {
   resetCookies() {
     this.htmlTemplate = this.logInHtml;
     this.IDs = [];
+    this.updateIdFile();
   }
 
   getHtmlTemplate() {
     return this.htmlTemplate;
+  }
+
+  setName(name) {
+    console.log(name);
+    this.loggedInHtml = this.loggedInHtml.replace(`##__name__##`, name);
   }
 }
 
